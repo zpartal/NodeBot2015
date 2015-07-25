@@ -1,18 +1,32 @@
 var five = require("johnny-five");
-var board = new five.Board({
-  port: "/dev/cu.MRROBOT-DevB"
-});
+var ports = [
+  { id: "A", port: "/dev/cu.MRROBOT-DevB" },
+  { id: "B", port: "/dev/cu.usbserial-A900cfzF" }
+];
 
-board.on("ready", function() {
+var boards = new five.Boards(ports).on("ready", function() {
   var configs = five.Motor.SHIELD_CONFIGS.SEEED_STUDIO;
 
   var motorA = new five.Motor(configs.A);
   var motorB = new five.Motor(configs.B);
 
-  this.repl.inject({
-    motorA: motorA,
-    motorB: motorB
-  });
+  var led1 = new five.Led({
+      pin: 13,
+      board: A
+    });
+
+  var led2 = new five.Led({
+      pin: 5,
+      board: B
+    });
+
+  led1.blink(500);
+  led2.blink(500);
+
+  // this.repl.inject({
+  //   motorA: motorA,
+  //   motorB: motorB
+  // });
 
   // motorA.forward(255);
   // motorB.forward(255);
@@ -21,5 +35,11 @@ board.on("ready", function() {
   //   motorA.stop();
   //   motorB.stop();
   // });
+
+  // Create a standard `led` component instance
+  var led = new five.Led(5);
+
+  // "blink" the led in 500ms on-off phase periods
+  led.blink(500);
 
 });
