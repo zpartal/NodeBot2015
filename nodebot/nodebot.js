@@ -1,45 +1,69 @@
-var five = require("johnny-five");
-var ports = [
-  { id: "A", port: "/dev/cu.MRROBOT-DevB" },
-  { id: "B", port: "/dev/cu.usbserial-A900cfzF" }
-];
+var five = require('johnny-five');
 
-var boards = new five.Boards(ports).on("ready", function() {
+var leftStickVal, rightStickVal;
+
+var robotBoard = new five.Board({
+  port: '/dev/cu.MRROBOT-DevB'
+});
+
+var controlBoard = new five.Board({
+  port: '/dev/cu.usbserial-A900cfzF'
+});
+
+robotBoard.on('ready', function() {
+
+  // All of da lights
+  var led = new five.Led({ pin: 5, board: robotBoard });
+  led.blink(500);
+
+  // Le motors
   var configs = five.Motor.SHIELD_CONFIGS.SEEED_STUDIO;
 
-  var motorA = new five.Motor(configs.A);
-  var motorB = new five.Motor(configs.B);
+  var leftMotor = new five.Motor(configs.B);
+  var rightMotor = new five.Motor(configs.A);
 
-  var led1 = new five.Led({
-      pin: 13,
-      board: A
-    });
+  this.loop(50, function() {
+    if (leftStickVal > 0) {
+      leftMotor.forward(255*leftStickVal);
+    }
+    else {
+      leftMotor.reverse(-1*255*leftStickVal);
+    }
 
-  var led2 = new five.Led({
-      pin: 5,
-      board: B
-    });
+    if (rightStickVal > 0) {
+      rightMotor.forward(255*rightStickVal);
+    }
+    else {
+      rightMotor.reverse(-1*255*rightStickVal);
+    }
+  });
 
-  led1.blink(500);
-  led2.blink(500);
+});
 
-  // this.repl.inject({
-  //   motorA: motorA,
-  //   motorB: motorB
-  // });
+controlBoard.on('ready', function() {
 
-  // motorA.forward(255);
-  // motorB.forward(255);
+  // Left Stick
+  var leftStick = new five.Joystick({
+    // [ x, y ]
+    pins: ["A0","A1"],
+    invertX: true,
+    board: controlBoard
+  })
+  .on("change", function() {
+    leftStickVal = this.x;
+    console.log('LEFT: ' + this.x)
+  });
 
-  // board.wait(2000, function() {
-  //   motorA.stop();
-  //   motorB.stop();
-  // });
-
-  // Create a standard `led` component instance
-  var led = new five.Led(5);
-
-  // "blink" the led in 500ms on-off phase periods
-  led.blink(500);
+  // Right Stick
+  var rightStick = new five.Joystick({
+    // [ x, y ]
+    pins: ["A2","A3"],
+    invertX: true,
+    board: controlBoard
+  })
+  .on("change", function() {
+    rightStickVal = this.x;
+    console.log('RIGHT: ' + this.x);
+  });
 
 });
